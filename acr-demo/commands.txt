@@ -1,0 +1,42 @@
+az account show
+
+az group list --output table
+
+az group create --name rg-ai200-max --location eastus 
+
+az acr create -g rg-ai200-max -n acrmaxai200 --sku basic
+
+az acr update -n acrmaxai200 --admin-enabled true
+
+az acr login -n acrmaxai200
+
+
+Method : 1
+
+docker build -t acr-demo:1.0 . 
+
+docker tag acr-demo:1.0 acrmaxai200.azurecr.io/acr-demo:1.0
+
+docker push acrmaxai200.azurecr.io/acr-demo:1.0
+
+
+
+Method : 2
+
+az acr build --registry acrmaxai200 --image acr-demo:2.0 . //dot means current folder contains the docker file
+
+az acr build --registry acrmaxai200  --image acr-demo:2.0  https://github.com/myorg/inference-api.git#devBranch
+
+
+
+Method 3:
+
+az acr task create `
+  --registry acrmaxai200 `
+  --name build-acr-demo `
+  --image "acr-demo:{{.Run.ID}}" `
+  --context https://github.com/mmajid-se/AzureAI200.git#main `
+  --file acr-demo/Dockerfile `
+  --git-access-token $env:PAT
+
+
